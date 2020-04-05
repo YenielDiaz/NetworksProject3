@@ -13,6 +13,7 @@ public class Sender implements Runnable{
 	private final int rPort;
 	//sender port
 	private final int sPort = 49000;
+	private int seqNumber;
 	
 	public Sender(int port) {
 		rPort = port;
@@ -26,10 +27,18 @@ public class Sender implements Runnable{
 			DatagramSocket sSocket = new DatagramSocket(sPort);
 			String m = "Messsage";
 			
+			seqNumber = 0;
 			DatagramPacket p = new DatagramPacket(m.getBytes(), m.length(),
 					InetAddress.getLocalHost(), rPort);
 			
-			sSocket.send(p);
+			while(true) {
+				//insert sequence number in frame
+				
+				sSocket.send(p);
+				
+			}
+			
+			
 			
 		} catch (SocketException e) {
 			e.printStackTrace();
@@ -54,7 +63,7 @@ public class Sender implements Runnable{
 
 	//in while loop
 		//construct a frame from transmission by putting the info in outbound frame equal to the outbound packet
-		//insert sequence in number in frame
+		//insert sequence number in frame
 		//send outbound frame variable to physical layer
 		//start timer (if it takes too long in receiving the ACK message send it again
 		//wait until you get the sign to continue from the even type variable
