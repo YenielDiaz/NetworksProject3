@@ -12,11 +12,12 @@ public class Sender implements Runnable{
 	//receiver port
 	private final int rPort;
 	//sender port
-	private final int sPort = 49000;
-	private int seqNumber;
+	private final int sPort;
+	private Integer seqNumber;
 	
-	public Sender(int port) {
-		rPort = port;
+	public Sender(int rport, int sport) {
+		this.rPort = rport;
+		this.sPort = sport;
 	}
 
 
@@ -24,28 +25,39 @@ public class Sender implements Runnable{
 	@Override
 	public void run() {
 		try {
-			DatagramSocket sSocket = new DatagramSocket(sPort);
-			String m = "Messsage";
+			DatagramSocket physical = new DatagramSocket(sPort);
 			
+			byte[] ackBuf = new byte[2000];
 			seqNumber = 0;
-			DatagramPacket p = new DatagramPacket(m.getBytes(), m.length(),
-					InetAddress.getLocalHost(), rPort);
 			
 			while(true) {
 				//insert sequence number in frame
+				String m  = new String("Message"); //get input from console and put it in m
+				DatagramPacket pSend = new DatagramPacket(m.getBytes(), m.length(),
+						InetAddress.getLocalHost(), rPort);
 				
-				sSocket.send(p);
-				
+				DatagramPacket pACK = new DatagramPacket(ackBuf, 0, ackBuf.length);
+				physical.send(pSend);
+				physical.setSoTimeout(1000);
+				physical.receive(pACK);
+				String ack = new String(pACK.getData());
+				System.out.println("ACK number received is: " + ack);
+				/*
+				if(pACK.getData().equals(seqNumber.toString().getBytes())){
+					//stop timer
+					//get next message to send
+					seqNumber++;
+					
+				}
+				*/
 			}
-			
-			
 			
 		} catch (SocketException e) {
 			e.printStackTrace();
 		} catch (UnknownHostException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
-			e.printStackTrace();
+			System.out.println("Timed out. Did not receive ACK");
 		}
 		
 	}

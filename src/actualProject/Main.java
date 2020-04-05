@@ -1,7 +1,5 @@
 package actualProject;
 
-import actualProject.Frame;
-
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -9,9 +7,10 @@ public class Main {
 	
 	
 	public static void main(String[] args) {
-		int port = 49001;
-		Sender send = new Sender(port);
-		Receiver receive = new Receiver(port);
+		int rPort = 49002;
+		int sPort = 49003;
+		Sender send = new Sender(rPort, sPort);
+		Receiver receive = new Receiver(rPort, sPort);
 		
 		ExecutorService execServ = Executors.newFixedThreadPool(2);
 		execServ.submit(receive);

@@ -3,28 +3,42 @@ package actualProject;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
+import java.net.InetAddress;
 import java.net.SocketException;
 
 public class Receiver implements Runnable{
 	
-	private final int rport;
+	//receiver port
+	private final int rPort;
+	//sender port
+	private final int sPort;
+	Integer expectedSeqNumber;
+	Integer ackNumber;
 	
-	public Receiver(int port) {
-		rport = port;
+	public Receiver(int rport, int sport) {
+		this.rPort = rport;
+		this.sPort = sport;
 	}
 
 	@Override
 	public void run() {
 		try {
-			DatagramSocket cSocket = new DatagramSocket(rport);
+			DatagramSocket network = new DatagramSocket(rPort);
 			byte[] buf = new byte[2000];
+			expectedSeqNumber = 0;
 			
-			cSocket.setSoTimeout(5000);
+			network.setSoTimeout(5000);
 			while(true) {
-				DatagramPacket p = new DatagramPacket(buf, 0, buf.length);
-				cSocket.receive(p);
-				String m = new String(p.getData());
-				System.out.println(m);
+				DatagramPacket pReceive = new DatagramPacket(buf, 0, buf.length);
+				network.receive(pReceive);
+				String m = new String(pReceive.getData());
+				System.out.println("Message received: " + m);
+				//check if received seqNumber equals expected one
+				ackNumber = expectedSeqNumber;
+				String ackString = ackNumber.toString();
+				DatagramPacket pACK = new DatagramPacket(ackString.getBytes(), ackString.length(),
+						InetAddress.getLocalHost(), sPort);
+				network.send(pACK);
 			}
 			
 			
