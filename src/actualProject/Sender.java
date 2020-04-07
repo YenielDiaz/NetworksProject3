@@ -1,5 +1,9 @@
 package actualProject;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -30,10 +34,16 @@ public class Sender implements Runnable{
 			byte[] ackBuf = new byte[2000];
 			seqNumber = 0;
 			
-			while(true) {
+			//this is supposed to be while(true) but im doing it a limited amount of times to test
+			while(seqNumber < 40) {
+				ByteArrayOutputStream bout = new ByteArrayOutputStream();
+				DataOutputStream dout = new DataOutputStream(bout);
+				dout.writeInt(seqNumber);
+				dout.close();
 				//insert sequence number in frame
 				String m  = new String("Message"); //get input from console and put it in m
-				DatagramPacket pSend = new DatagramPacket(m.getBytes(), m.length(),
+				bout.write(m.getBytes());
+				DatagramPacket pSend = new DatagramPacket(bout.toByteArray(), bout.size(),
 						InetAddress.getLocalHost(), rPort);
 				
 				DatagramPacket pACK = new DatagramPacket(ackBuf, 0, ackBuf.length);
@@ -41,15 +51,17 @@ public class Sender implements Runnable{
 				physical.setSoTimeout(1000);
 				physical.receive(pACK);
 				String ack = new String(pACK.getData());
-				System.out.println("ACK number received is: " + ack);
-				/*
-				if(pACK.getData().equals(seqNumber.toString().getBytes())){
+				System.out.println("ACK number received is: " + ack); //testing line
+			
+				if(ack.equals(seqNumber.toString())){
 					//stop timer
 					//get next message to send
 					seqNumber++;
+					System.out.println(seqNumber);
 					
 				}
-				*/
+				seqNumber++;
+				bout.close();
 			}
 			
 		} catch (SocketException e) {
@@ -87,4 +99,50 @@ public class Sender implements Runnable{
 				//increment sequence number
 
 	///////////////////////////////////////////////
+	
+	
+	/*
+	 * WAY TO INCLUDE SEQNUMBER IN DATAGRAM PACKET AND READ IT
+	 * 
+	 * 
+	 *     Create a ByteArrayOutputStream.
+    Wrap it in a DataOutputStream
+    Use DataOutputStream.writeInt() to write the sequence number.
+    Use write() to write the data.
+    Construct the DatagramPacket from the byte array returned by the ByteArrayOutputStream.
+    
+	 * //mesage
+		String m = "Message";
+		//seq number
+		int i = 478;
+		
+		//make byte array output stream and  wrap in data output stream
+		ByteArrayOutputStream b = new ByteArrayOutputStream();
+		DataOutputStream dout = new DataOutputStream(b);
+		
+		try {
+			//write the seq number first
+			dout.writeInt(i);
+			dout.close();
+			
+			//write the message next
+			b.write(m.getBytes(), 0, m.length());
+			b.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
+		//make byte array input stream and wrap in data input stream
+		ByteArrayInputStream bi = new ByteArrayInputStream(b.toByteArray());
+		DataInputStream din = new DataInputStream(bi);
+		
+		try {
+			//reading the sequence number
+			System.out.println(din.readInt());
+			din.close();
+			bi.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	 */
 }

@@ -1,5 +1,7 @@
 package actualProject;
 
+import java.io.ByteArrayInputStream;
+import java.io.DataInputStream;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -31,14 +33,22 @@ public class Receiver implements Runnable{
 			while(true) {
 				DatagramPacket pReceive = new DatagramPacket(buf, 0, buf.length);
 				network.receive(pReceive);
-				String m = new String(pReceive.getData());
-				System.out.println("Message received: " + m);
-				//check if received seqNumber equals expected one
-				ackNumber = expectedSeqNumber;
+				ByteArrayInputStream bin = new ByteArrayInputStream(pReceive.getData());
+				DataInputStream din = new DataInputStream(bin);
+				//comparing expected seq number to the seq number received
+				if(expectedSeqNumber == din.readInt()) {
+					String m = new String(din.readLine());
+					System.out.println("Message received: " + m);
+					expectedSeqNumber++;
+				}
+				
+				din.close();
+				ackNumber = expectedSeqNumber-1;
 				String ackString = ackNumber.toString();
 				DatagramPacket pACK = new DatagramPacket(ackString.getBytes(), ackString.length(),
 						InetAddress.getLocalHost(), sPort);
 				network.send(pACK);
+				bin.close();
 			}
 			
 			
