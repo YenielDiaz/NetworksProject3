@@ -22,7 +22,6 @@ public class UnreliableReceiver implements Runnable{
 		try {
 			DatagramSocket network = new DatagramSocket(rport);
 			
-			network.setSoTimeout(5000);
 			while(true) {
 				byte[] buf = new byte[2000];
 				DatagramPacket pReceive = new DatagramPacket(buf, 0, buf.length);

@@ -29,32 +29,46 @@ public class Receiver implements Runnable{
 	@Override
 	public void run() {
 		try {
+			//creating socket which will receive the message
 			DatagramSocket network = new DatagramSocket(rPort);
+			//resetting expected sequence number
 			expectedSeqNumber = 0;
 			
-			network.setSoTimeout(5000);
+			
 			while(true) {
+				//make buffer that will store received message
 				byte[] buf = new byte[2000];
+				//make packet that will receive message
 				DatagramPacket pReceive = new DatagramPacket(buf, 0, buf.length);
+				//receive message
 				network.receive(pReceive);
+				
+				//make input streams to read the sequence number and the message
 				ByteArrayInputStream bin = new ByteArrayInputStream(pReceive.getData());
 				DataInputStream din = new DataInputStream(bin);
 
 				//comparing expected seq number to the seq number received
 				if(expectedSeqNumber == din.readInt()) {
+					//insert message into string
 					String m = new String(din.readLine());
-					System.out.println("Message received: " + m);
+					//print message
+					System.out.println("Message with expected SeqNumber received: " + m);
+					//increment expected sequence number
 					expectedSeqNumber++;
 				}
 				
 				din.close();
+				//make output streams to write in the ack number
 				ByteArrayOutputStream bout = new ByteArrayOutputStream();
 				DataOutputStream dout = new DataOutputStream(bout);
 				ackNumber = expectedSeqNumber-1;
 				
 				dout.writeInt(ackNumber);
+				//make packet to send the ack number
 				DatagramPacket pACK = new DatagramPacket(bout.toByteArray(), bout.size(),
 						InetAddress.getLocalHost(), sPort);
+				
+				//send the ack number
 				network.send(pACK);
 				bin.close();
 				dout.close();
