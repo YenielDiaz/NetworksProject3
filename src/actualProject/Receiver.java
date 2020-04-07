@@ -1,8 +1,12 @@
 package actualProject;
 
+import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
@@ -26,15 +30,16 @@ public class Receiver implements Runnable{
 	public void run() {
 		try {
 			DatagramSocket network = new DatagramSocket(rPort);
-			byte[] buf = new byte[2000];
 			expectedSeqNumber = 0;
 			
 			network.setSoTimeout(5000);
 			while(true) {
+				byte[] buf = new byte[2000];
 				DatagramPacket pReceive = new DatagramPacket(buf, 0, buf.length);
 				network.receive(pReceive);
 				ByteArrayInputStream bin = new ByteArrayInputStream(pReceive.getData());
 				DataInputStream din = new DataInputStream(bin);
+
 				//comparing expected seq number to the seq number received
 				if(expectedSeqNumber == din.readInt()) {
 					String m = new String(din.readLine());
@@ -43,12 +48,17 @@ public class Receiver implements Runnable{
 				}
 				
 				din.close();
+				ByteArrayOutputStream bout = new ByteArrayOutputStream();
+				DataOutputStream dout = new DataOutputStream(bout);
 				ackNumber = expectedSeqNumber-1;
-				String ackString = ackNumber.toString();
-				DatagramPacket pACK = new DatagramPacket(ackString.getBytes(), ackString.length(),
+				
+				dout.writeInt(ackNumber);
+				DatagramPacket pACK = new DatagramPacket(bout.toByteArray(), bout.size(),
 						InetAddress.getLocalHost(), sPort);
 				network.send(pACK);
 				bin.close();
+				dout.close();
+				bout.close();
 			}
 			
 			

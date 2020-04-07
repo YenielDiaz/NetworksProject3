@@ -12,8 +12,8 @@ public class Main {
 	
 	
 	public static void main(String[] args) {
-		int rPort = 49004;
-		int sPort = 49005;
+		int rPort = 49001;
+		int sPort = 49002;
 		Sender send = new Sender(rPort, sPort);
 		Receiver receive = new Receiver(rPort, sPort);
 		
