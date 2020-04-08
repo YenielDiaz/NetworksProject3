@@ -37,10 +37,9 @@ public class UnreliableSender implements Runnable{
 				//20% chance of discarding packet
 				if(!(r.nextInt(5) % 5 == 0)) {
 					sout.send(pout);
-				}
-				//10% chance of sending duplicate package
-				if(r.nextInt(10) % 10 == 0) {
-					sout.send(pout);
+					//10% chance of sending duplicate package
+					if(r.nextInt(10) % 10 == 0) 
+						sout.send(pout);
 				}
 			}
 		} catch (IOException e) {

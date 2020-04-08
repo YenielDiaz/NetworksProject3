@@ -32,7 +32,6 @@ public class UnreliableReceiver implements Runnable{
 			}
 			
 			
-			
 		} catch (SocketException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
